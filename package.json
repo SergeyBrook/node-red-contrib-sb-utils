@@ -1,0 +1,29 @@
+{
+	"name": "node-red-contrib-sb-utils",
+	"version": "0.1.0",
+	"description": "Node-RED utility nodes",
+	"keywords": [
+		"node-red",
+		"gate",
+		"queue",
+		"watchdog"
+	],
+	"license": "MIT",
+	"author": {
+		"name": "Sergey Brook",
+		"email": "brook.sergey@gmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": ""
+	},
+	"dependencies": {},
+	"node-red": {
+		"version": ">=1.0.0",
+		"nodes": {
+			"sb-gate": "nodes/gate.js",
+			"sb-queue": "nodes/queue.js",
+			"sb-watchdog": "nodes/watchdog.js"
+		}
+	}
+}

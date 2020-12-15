@@ -1,0 +1,147 @@
+<!-- Watchdog node -->
+
+<script type="text/javascript">
+	RED.nodes.registerType('sb-watchdog', {
+		category: 'sb utils',
+		color: '#C0C0C0',
+		defaults: {
+			name: {value: ''},
+			control: {value: 'control', required: true},
+			delay: {value: 60, required: true, validate: function(val) {
+				return parseInt(val) >= 1;
+			}},
+			units: {value: 'seconds'},
+			enableEvents: {value: false},
+			initOn: {value: false},
+			initEvent: {value: false},
+			outputs: {value: 2}
+		},
+		inputs: 1,
+		inputLabels: 'Data / Control',
+		outputs: 2,
+		outputLabels: ['Data', 'Trigger', 'Event'],
+		icon: 'font-awesome/fa-eye',
+		paletteLabel: 'watchdog',
+		label: function() {
+			return this.name || 'watchdog';
+		},
+		labelStyle: function() {
+			return this.name ? "node_label_italic" : "";
+		},
+		oneditprepare: function() {
+			let node = this;
+			let updateControlsVisibility = function() {
+				if ($('#node-input-enableEvents').prop('checked')) {
+					$('#node-field-initEvent').show();
+					node.outputs = 3;
+				} else {
+					$('#node-field-initEvent').hide();
+					$('#node-input-initEvent').prop('checked', false);
+					node.outputs = 2;
+				}
+			}
+			$('#node-input-enableEvents').on('change', updateControlsVisibility);
+			updateControlsVisibility();
+		}
+	});
+</script>
+
+<script type="text/html" data-template-name="sb-watchdog">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name">
+	</div>
+	<div class="form-row">
+		<label for="node-input-control"><i class="fa fa-cog"></i> Control</label>
+		<input type="text" id="node-input-control">
+	</div>
+	<div class="form-row">
+		<label for="node-input-delay"><i class="fa fa-clock-o"></i> Delay</label>
+		<input type="number" id="node-input-delay" min="1" placeholder="60" style="width: 24%;">
+		<select id="node-input-units" style="width: 45%;">
+			<option value="milliseconds">Milliseconds</option>
+			<option value="seconds">Seconds</option>
+			<option value="minutes">Minutes</option>
+			<option value="hours">Hours</option>
+			<option value="days">Days</option>
+		</select>
+	</div>
+	<div class="form-row">
+		<label><i class="fa fa-random"></i> Output</label>
+		<input type="checkbox" id="node-input-enableEvents" style="width: auto; vertical-align: top;">
+		<label for="node-input-enableEvents" style="width: auto; padding-left: 0.5em;">Enable events on third output</label>
+	</div>
+	<div class="form-row">
+		<label><i class="fa fa-power-off"></i> On init</label>
+		<input type="checkbox" id="node-input-initOn" style="width: auto; vertical-align: top;">
+		<label for="node-input-initOn" style="width: auto; padding-left: 0.5em;">Turn watchdog on</label>
+	</div>
+	<div class="form-row" id="node-field-initEvent">
+		<label>&nbsp;</label>
+		<input type="checkbox" id="node-input-initEvent" style="width: auto; vertical-align: top;">
+		<label for="node-input-initEvent" style="width: auto; padding-left: 0.5em;">Emit state event</label>
+	</div>
+</script>
+
+<script type="text/html" data-help-name="sb-watchdog">
+	<p>Watchdog node</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt class="optional">control <span class="property-type">string</span></dt>
+		<dd>If present, the message is treated as 'command' and not resets watchdog timer nor forwarded to first (Data) output. Possible values: 'on', 'off', 'toggle', 'get-state', 'void'. If not present, the message is treated as 'regular' message.</dd>
+	</dl>
+	<h3>Outputs</h3>
+	<ol class="node-ports">
+		<li>Data
+			<dl class="message-properties">
+				<dt>msg <span class="property-type">object</span></dt>
+				<dd>'Regular' input message always forwarded to this output regardles of watchdog state ('on' or 'off').</dd>
+			</dl>
+		</li>
+		<li>Trigger
+			<dl class="message-properties">
+				<dt>delay <span class="property-type">integer</span></dt>
+				<dd>Watchdog delay in milliseconds.</dd>
+			</dl>
+		</li>
+		<li>Event (optional)
+			<dl class="message-properties">
+				<dt>name <span class="property-type">string</span></dt>
+				<dd>Event name. Possible values: 'state'</dd>
+				<dt>reason <span class="property-type">string</span></dt>
+				<dd>Event reason. Possible values: 'on', 'off', 'toggle', 'init', 'get-state'.</dd>
+				<dt>state <span class="property-type">string</span></dt>
+				<dd>String value of the watchdog state. Possible values: 'on', 'off'.</dd>
+				<dt>on <span class="property-type">boolean</span></dt>
+				<dd>Boolean value of the watchdog state. Possible values: 'true' if on, 'false' if off.</dd>
+				<dt>off <span class="property-type">boolean</span></dt>
+				<dd>Inverted boolean value of the watchdog state. Possible values: 'true' if off, 'false' if on.</dd>
+				<dt>delay <span class="property-type">integer</span></dt>
+				<dd>Watchdog delay in milliseconds.</dd>
+			</dl>
+		</li>
+	</ol>
+	<h3>Details</h3>
+	<p>Config:
+		<ul>
+			<li>'Name' - node name.</li>
+			<li>'Control' - control property name.</li>
+			<li>'Delay' - delay value and units.</li>
+			<li>'Output: Enable events on third output' - if checked, will enable third output for events.</li>
+			<li>'On init: Turn watchdog on' - turn the watchdog on at start.</li>
+			<li>'On init: Emit state event' - emit state event at start. Only available if third output is enabled.</li>
+		</ul>
+	</p>
+	<p>Commands:
+		<ul>
+			<li>'on' - turn watchdog on.</li>
+			<li>'off' - turn watchdog off.</li>
+			<li>'toggle' - toggle watchdog.</li>
+			<li>'get-state' - emit state event. Does nothing if third output disabled.</li>
+			<li>'void' - treat the message as valid command, but do nothing.</li>
+		</ul>
+		All commands are case insensitive. If invalid command received, the 'Invalid command' error will be thrown.
+		When watchdog is turned on, each received 'regular' message resets the watchdog timer.
+		If 'regular' message is not received within 'delay' priod of time, the trigger message emited on the 'Trigger' output and the watchdog timer starts again.
+	</p>
+</script>

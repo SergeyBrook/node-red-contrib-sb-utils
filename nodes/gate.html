@@ -1,0 +1,122 @@
+<!-- Gate node -->
+
+<script type="text/javascript">
+	RED.nodes.registerType('sb-gate', {
+		category: 'sb utils',
+		color: '#C0C0C0',
+		defaults: {
+			name: {value: ''},
+			control: {value: 'control', required: true},
+			enableEvents: {value: false},
+			initOpen: {value: false},
+			initEvent: {value: false},
+			outputs: {value: 1}
+		},
+		inputs: 1,
+		inputLabels: 'Data / Control',
+		outputs: 1,
+		outputLabels: ['Data', 'Event'],
+		icon: 'font-awesome/fa-step-forward',
+		paletteLabel: 'gate',
+		label: function() {
+			return this.name || 'gate';
+		},
+		labelStyle: function() {
+			return this.name ? "node_label_italic" : "";
+		},
+		oneditprepare: function() {
+			let node = this;
+			let updateControlsVisibility = function() {
+				if ($('#node-input-enableEvents').prop('checked')) {
+					$('#node-field-initEvent').show();
+					node.outputs = 2;
+				} else {
+					$('#node-field-initEvent').hide();
+					$('#node-input-initEvent').prop('checked', false);
+					node.outputs = 1;
+				}
+			}
+			$('#node-input-enableEvents').on('change', updateControlsVisibility);
+			updateControlsVisibility();
+		}
+	});
+</script>
+
+<script type="text/html" data-template-name="sb-gate">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name">
+	</div>
+	<div class="form-row">
+		<label for="node-input-control"><i class="fa fa-cog"></i> Control</label>
+		<input type="text" id="node-input-control">
+	</div>
+	<div class="form-row">
+		<label><i class="fa fa-random"></i> Output</label>
+		<input type="checkbox" id="node-input-enableEvents" style="width: auto; vertical-align: top;">
+		<label for="node-input-enableEvents" style="width: auto; padding-left: 0.5em;">Enable events on second output</label>
+	</div>
+	<div class="form-row">
+		<label><i class="fa fa-power-off"></i> On init</label>
+		<input type="checkbox" id="node-input-initOpen" style="width: auto; vertical-align: top;">
+		<label for="node-input-initOpen" style="width: auto; padding-left: 0.5em;">Open gate</label>
+	</div>
+	<div class="form-row" id="node-field-initEvent">
+		<label>&nbsp;</label>
+		<input type="checkbox" id="node-input-initEvent" style="width: auto; vertical-align: top;">
+		<label for="node-input-initEvent" style="width: auto; padding-left: 0.5em;">Emit state event</label>
+	</div>
+</script>
+
+<script type="text/html" data-help-name="sb-gate">
+	<p>Gate node</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt class="optional">control <span class="property-type">string</span></dt>
+		<dd>If present, the message is treated as 'command' and not forwarded to first (Data) output. Possible values: 'open', 'close', 'toggle', 'get-state', 'void'. If not present, the message is treated as 'regular' message.</dd>
+	</dl>
+	<h3>Outputs</h3>
+	<ol class="node-ports">
+		<li>Data
+			<dl class="message-properties">
+				<dt>msg <span class="property-type">object</span></dt>
+				<dd>if gate is open, the 'regular' input message forwarded to this output.</dd>
+			</dl>
+		</li>
+		<li>Event (optional)
+			<dl class="message-properties">
+				<dt>name <span class="property-type">string</span></dt>
+				<dd>Event name. Possible values: 'state'</dd>
+				<dt>reason <span class="property-type">string</span></dt>
+				<dd>Event reason. Possible values: 'open', 'close', 'toggle', 'init', 'get-state'.</dd>
+				<dt>state <span class="property-type">string</span></dt>
+				<dd>String value of the gate state. Possible values: 'opened', 'closed'.</dd>
+				<dt>opened <span class="property-type">boolean</span></dt>
+				<dd>Boolean value of the gate state. Possible values: 'true' if opened, 'false' if closed.</dd>
+				<dt>closed <span class="property-type">boolean</span></dt>
+				<dd>Inverted boolean value of the gate state. Possible values: 'true' if closed, 'false' if opened.</dd>
+			</dl>
+		</li>
+	</ol>
+	<h3>Details</h3>
+	<p>Config:
+		<ul>
+			<li>'Name' - node name.</li>
+			<li>'Control' - control property name.</li>
+			<li>'Output: Enable events on second output' - if checked, will enable second output for events.</li>
+			<li>'On init: Open gate' - open the gate at start.</li>
+			<li>'On init: Emit state event' - emit state event at start. Only available if second output is enabled.</li>
+		</ul>
+	</p>
+	<p>Commands:
+		<ul>
+			<li>'open' - open gate.</li>
+			<li>'close' - close gate.</li>
+			<li>'toggle' - toggle gate.</li>
+			<li>'get-state' - emit state event. Does nothing if second output disabled.</li>
+			<li>'void' - treat the message as valid command, but do nothing.</li>
+		</ul>
+		All commands are case insensitive. If invalid command received, 'Invalid command' error thrown.
+		If the gate is 'open', each regular message forwarded from input to 'Data' output as is, if the gate is 'close', the message is dropped.
+	</p>
+</script>
