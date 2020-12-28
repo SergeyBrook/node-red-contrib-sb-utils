@@ -32,7 +32,7 @@ module.exports = function(RED) {
 					this.turnOff();
 				}
 				if (node.initEvent) {
-					node.send([null, null, this.getEvent('init')]);
+					node.send([null, null, this.getStateEvent('init')]);
 				}
 			},
 			setDelay: function(delay, units) {
@@ -56,7 +56,7 @@ module.exports = function(RED) {
 				if (!this.on) {
 					this.on = true;
 					this.id = setTimeout(this.onTimeout, this.delay);
-					event = this.getEvent('on');
+					event = this.getStateEvent('on');
 				}
 				node.status(this.getStatus());
 				return event;
@@ -66,7 +66,7 @@ module.exports = function(RED) {
 				if (this.on) {
 					this.on = false;
 					clearTimeout(this.id);
-					event = this.getEvent('off');
+					event = this.getStateEvent('off');
 				}
 				node.status(this.getStatus());
 				return event;
@@ -79,7 +79,7 @@ module.exports = function(RED) {
 				}
 				this.on = !this.on;
 				node.status(this.getStatus());
-				return this.getEvent('toggle');
+				return this.getStateEvent('toggle');
 			},
 			reset: function() {
 				if (this.on) {
@@ -96,7 +96,7 @@ module.exports = function(RED) {
 					text: (this.on ? 'On (' : 'Off (') + this.delay / 1000 + ' sec)'
 				};
 			},
-			getEvent: function(reason) {
+			getStateEvent: function(reason) {
 				let result = null;
 				if (node.enableEvents && reason) {
 					result = {
@@ -164,7 +164,7 @@ module.exports = function(RED) {
 							break;
 						case 'get-state':
 							// Add 'state' event:
-							event = node.watchdog.getEvent(command);
+							event = node.watchdog.getStateEvent(command);
 							break;
 						case 'void':
 							// Do nothing.

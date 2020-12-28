@@ -29,14 +29,14 @@ module.exports = function(RED) {
 					this.close();
 				}
 				if (node.initEvent) {
-					node.send([null, this.getEvent('init')]);
+					node.send([null, this.getStateEvent('init')]);
 				}
 			},
 			open: function() {
 				let event = null;
 				if (!this.opened) {
 					this.opened = true;
-					event = this.getEvent('open');
+					event = this.getStateEvent('open');
 				}
 				node.status(this.getStatus());
 				return event;
@@ -45,7 +45,7 @@ module.exports = function(RED) {
 				let event = null;
 				if (this.opened) {
 					this.opened = false;
-					event = this.getEvent('close');
+					event = this.getStateEvent('close');
 				}
 				node.status(this.getStatus());
 				return event;
@@ -53,7 +53,7 @@ module.exports = function(RED) {
 			toggle: function() {
 				this.opened = !this.opened;
 				node.status(this.getStatus());
-				return this.getEvent('toggle');
+				return this.getStateEvent('toggle');
 			},
 			isOpen: function() {
 				return this.opened;
@@ -65,7 +65,7 @@ module.exports = function(RED) {
 					text: (this.opened ? 'Open' : 'Close')
 				};
 			},
-			getEvent: function(reason) {
+			getStateEvent: function(reason) {
 				let result = null;
 				if (node.enableEvents && reason) {
 					result = {
@@ -120,7 +120,7 @@ module.exports = function(RED) {
 							break;
 						case 'get-state':
 							// Add 'state' event:
-							event = node.gate.getEvent(command);
+							event = node.gate.getStateEvent(command);
 							break;
 						case 'void':
 							// Do nothing.
