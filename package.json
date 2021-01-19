@@ -21,9 +21,9 @@
 	"node-red": {
 		"version": ">=1.0.0",
 		"nodes": {
-			"sb-gate": "nodes/gate.js",
-			"sb-queue": "nodes/queue.js",
-			"sb-watchdog": "nodes/watchdog.js"
+			"sb-gate": "nodes/sb-gate.js",
+			"sb-queue": "nodes/sb-queue.js",
+			"sb-watchdog": "nodes/sb-watchdog.js"
 		}
 	}
 }
