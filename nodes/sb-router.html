@@ -1,0 +1,75 @@
+<!-- Router node -->
+
+<script type="text/javascript">
+	RED.nodes.registerType('sb-router', {
+		category: 'sb utils',
+		color: '#C0C0C0',
+		defaults: {
+			name: {value: ''},
+			control: {value: 'control', required: true},
+			outputs: {value: 2, required: true, validate: function(val) {
+				val = parseInt(val);
+				return val >= 2;
+			}}
+		},
+		inputs: 1,
+		inputLabels: 'Data / Control',
+		outputs: 2,
+		icon: 'font-awesome/fa-map-signs',
+		paletteLabel: 'router',
+		label: function() {
+			return this.name || 'router';
+		},
+		labelStyle: function() {
+			return this.name ? "node_label_italic" : "";
+		},
+		oneditprepare: function() {
+			let node = this;
+			this.outputs = parseInt($('#node-input-outputs').val());
+		}
+	});
+</script>
+
+<script type="text/html" data-template-name="sb-router">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name">
+	</div>
+	<div class="form-row">
+		<label for="node-input-control"><i class="fa fa-cog"></i> Control</label>
+		<input type="text" id="node-input-control">
+	</div>
+	<div class="form-row">
+		<label for="node-input-outputs"><i class="fa fa-sign-out"></i> Outputs</label>
+		<input type="number" id="node-input-outputs" min="2" placeholder="2">
+	</div>
+</script>
+
+<script type="text/html" data-help-name="sb-router">
+	<p>Router node</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt class="optional">control <span class="property-type">integer</span></dt>
+		<dd>If present, the message is treated as 'command' and not forwarded to any output. Possible values: [1 ... n]. If not present, the message is treated as 'regular' message.</dd>
+	</dl>
+	<h3>Outputs</h3>
+	<dl class="message-properties">
+		<dt>msg <span class="property-type">object</span></dt>
+		<dd>The 'regular' input message is forwarded to selected output.</dd>
+	</dl>
+	<h3>Details</h3>
+	<p>Config:
+		<ul>
+			<li>'Name' - node name.</li>
+			<li>'Control' - control property name.</li>
+			<li>'Outputs' - number of router outputs (min: 2).</li>
+		</ul>
+	</p>
+	<p>Commands:
+		<ul>
+			<li>[1 ... n] - select to which output incomming messages will be routed.</li>
+		</ul>
+		If invalid command received, 'Invalid command' error thrown.
+		Each 'regular' message is routed from input to selected output as is.
+	</p>
+</script>
