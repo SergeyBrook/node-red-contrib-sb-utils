@@ -22,6 +22,7 @@
 		"version": ">=1.0.0",
 		"nodes": {
 			"sb-gate": "nodes/sb-gate.js",
+			"sb-pulse": "nodes/sb-pulse.js",
 			"sb-queue": "nodes/sb-queue.js",
 			"sb-router": "nodes/sb-router.js",
 			"sb-watchdog": "nodes/sb-watchdog.js"

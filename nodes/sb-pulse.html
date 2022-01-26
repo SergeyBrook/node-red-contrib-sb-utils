@@ -1,0 +1,214 @@
+<!-- Pulse node -->
+
+<script type="text/javascript">
+	RED.nodes.registerType('sb-pulse', {
+		category: 'sb utils',
+		color: '#C0C0C0',
+		defaults: {
+			name: {value: ''},
+			control: {value: 'payload', required: true},
+			lengthOn: {value: 500, required: true, validate: function(val) {
+				return parseInt(val) >= 50;
+			}},
+			lengthOff: {value: 500, required: true, validate: function(val) {
+				return parseInt(val) >= 50;
+			}},
+			valueOn: {value: 1, required: true},
+			valueOnType: {value: 'num'},
+			valueOff: {value: 0, required: true},
+			valueOffType: {value: 'num'},
+			enableEvents: {value: false},
+			busyMessage: {value: 'void', required: true},
+			readyMessage: {value: 'void', required: true},
+			outputs: {value: 2}
+		},
+		inputs: 1,
+		inputLabels: 'Data / Control',
+		outputs: 2,
+		outputLabels: ['Signal ON', 'Signal OFF', 'Event'],
+		icon: 'font-awesome/fa-bolt',
+		paletteLabel: 'pulse',
+		label: function() {
+			return this.name || 'pulse';
+		},
+		labelStyle: function() {
+			return this.name ? "node_label_italic" : "";
+		},
+		oneditprepare: function() {
+			let node = this;
+
+			// Value-ON typed input:
+			$('#node-input-valueOn').typedInput({
+				default: 'num',
+				types:['str', 'num', 'bool'],
+				typeField: '#node-input-valueOnType'
+			});
+			// Value-ON on change handler:
+			$('#node-input-valueOn').on('change', function() {
+				let type = $('#node-input-valueOn').typedInput('type');
+				let value = $('#node-input-valueOn').typedInput('value');
+				if (value === '') {
+					switch (type) {
+						case 'str':
+							$('#node-input-valueOn').typedInput('value', 'On');
+							break;
+						case 'num':
+							$('#node-input-valueOn').typedInput('value', 1);
+							break;
+						case 'bool':
+							// Never get here - on `bool` selection, the value is never empty...
+							$('#node-input-valueOn').typedInput('value', true);
+							break;
+					}
+				}
+			});
+
+			// Value-OFF typed input:
+			$('#node-input-valueOff').typedInput({
+				default: 'num',
+				types:['str', 'num', 'bool'],
+				typeField: '#node-input-valueOffType'
+			});
+			// Value-ON on change handler:
+			$('#node-input-valueOff').on('change', function() {
+				let type = $('#node-input-valueOff').typedInput('type');
+				let value = $('#node-input-valueOff').typedInput('value');
+				if (value === '') {
+					switch (type) {
+						case 'str':
+							$('#node-input-valueOff').typedInput('value', 'Off');
+							break;
+						case 'num':
+							$('#node-input-valueOff').typedInput('value', 0);
+							break;
+						case 'bool':
+							// Never get here - on `bool` selection, the value is never empty...
+							$('#node-input-valueOff').typedInput('value', false);
+							break;
+					}
+				}
+			});
+
+			let updateControlsVisibility = function() {
+				if ($('#node-input-enableEvents').prop('checked')) {
+					$('#node-field-outMessage').show();
+					node.outputs = 3;
+				} else {
+					$('#node-field-outMessage').hide();
+					node.outputs = 2;
+				}
+			}
+			$('#node-input-enableEvents').on('change', updateControlsVisibility);
+			updateControlsVisibility();
+		}
+	});
+</script>
+
+<script type="text/html" data-template-name="sb-pulse">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name">
+	</div>
+	<div class="form-row">
+		<label for="node-input-control"><i class="fa fa-cog"></i> Control</label>
+		<input type="text" id="node-input-control">
+	</div>
+	<div class="form-row">
+		<label><i class="fa fa-clock-o"></i> Time (ms)</label>
+		<label for="node-input-lengthOn" style="width: auto;">On</label>
+		<input type="number" id="node-input-lengthOn" min="50" placeholder="500" style="width: 29%;">
+		<label for="node-input-lengthOff" style="width: auto; padding-left: 1em;">Off</label>
+		<input type="number" id="node-input-lengthOff" min="50" placeholder="500" style="width: 29%;">
+	</div>
+	<div class="form-row">
+		<label><i class="fa fa-hashtag"></i> Value</label>
+		<label for="node-input-valueOn" style="width: auto;">On</label>
+		<input type="text" id="node-input-valueOn" style="width: 29%;">
+		<input type="hidden" id="node-input-valueOnType">
+		<label for="node-input-valueOff" style="width: auto; padding-left: 1em;">Off</label>
+		<input type="text" id="node-input-valueOff" style="width: 29%;">
+		<input type="hidden" id="node-input-valueOffType">
+	</div>
+	<div class="form-row">
+		<label><i class="fa fa-random"></i> Output</label>
+		<input type="checkbox" id="node-input-enableEvents" style="width: auto; vertical-align: top;">
+		<label for="node-input-enableEvents" style="width: auto; padding-left: 0.5em;">Enable events on third output</label>
+	</div>
+	<div class="form-row" id="node-field-outMessage">
+		<label><i class="fa fa-sign-out"></i> Out ctrl</label>
+		<label for="node-input-busyMessage" style="width: auto;">Busy</label>
+		<input type="text" id="node-input-busyMessage" placeholder="void" style="width: 27%;">
+		<label for="node-input-readyMessage" style="width: auto; padding-left: 1em;">Ready</label>
+		<input type="text" id="node-input-readyMessage" placeholder="void" style="width: 25%;">
+	</div>
+</script>
+
+<script type="text/html" data-help-name="sb-pulse">
+	<p>Pulse node</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>payload <span class="property-type">integer</span></dt>
+		<dd>The number of pulses to generate.</dd>
+	</dl>
+	<h3>Outputs</h3>
+	<ol class="node-ports">
+		<li>Signal ON
+			<dl class="message-properties">
+				<dt>name <span class="property-type">string</span></dt>
+				<dd>Signal name. Value: 'on'</dd>
+				<dt>payload <span class="property-type">string | number | boolean</span></dt>
+				<dd>Signal value. Value: according to 'Value - On' node property.</dd>
+				<dt>duration <span class="property-type">integer</span></dt>
+				<dd>Signal length in milliseconds. Value: according to 'Time (ms) - On' node property.</dd>
+				<dt>count <span class="property-type">integer</span></dt>
+				<dd>Pulse sequence number.</dd>
+				<dt>total <span class="property-type">integer</span></dt>
+				<dd>Requested number of pulses.</dd>
+			</dl>
+		</li>
+		<li>Signal OFF
+			<dl class="message-properties">
+				<dt>name <span class="property-type">string</span></dt>
+				<dd>Signal name. Value: 'off'</dd>
+				<dt>payload <span class="property-type">string | number | boolean</span></dt>
+				<dd>Signal value. Value: according to 'Value - Off' node property.</dd>
+				<dt>duration <span class="property-type">integer</span></dt>
+				<dd>Signal length in milliseconds. Value: according to 'Time (ms) - Off' node property.</dd>
+				<dt>count <span class="property-type">integer</span></dt>
+				<dd>Pulse sequence number.</dd>
+				<dt>total <span class="property-type">integer</span></dt>
+				<dd>Requested number of pulses.</dd>
+			</dl>
+		</li>
+		<li>Event (optional)
+			<dl class="message-properties">
+				<dt>name <span class="property-type">string</span></dt>
+				<dd>Event name. Possible values: 'state', 'drop'</dd>
+				<dt>reason <span class="property-type">string</span></dt>
+				<dd>Event reason. Possible values: 'change', 'busy'.</dd>
+				<dt class="optional">state <span class="property-type">string</span></dt>
+				<dd>Node state (for state events only). Possible values: 'busy', 'ready'.</dd>
+				<dt class="optional">control <span class="property-type">string</span></dt>
+				<dd>Control message (for state events only). Value: according to 'Out ctrl - Busy / Ready' node properties.</dd>
+				<dt class="optional">data <span class="property-type">object</span></dt>
+				<dd>Additional event data (for drop events only). Value: dropped message.</dd>
+			</dl>
+		</li>
+	</ol>
+	<h3>Details</h3>
+	<p>Config:
+		<ul>
+			<li>'Name' - node name.</li>
+			<li>'Control' - Message property name where control message (the number of pulses to generate) is expected.</li>
+			<li>'Time (ms): On / Off' - Duration (in milliseconds) of ON and OFF signals.</li>
+			<li>'Value: On / Off' - Value that will be sent in <code>msg.payload</code> of ON and OFF signals.</li>
+			<li>'Output: Enable events on third output' - If checked, will enable third output for events.</li>
+			<li>'Out ctrl: Busy / Ready' - Values to send in state event message in <code>msg.control</code> property. Usefull to send state based control messages to other nodes, like Queue.</li>
+		</ul>
+	</p>
+	<p>Notes:
+		<ul>
+			<li>All incoming messages will be dropped while the node is in 'busy' satate.</li>
+		</ul>
+	</p>
+</script>

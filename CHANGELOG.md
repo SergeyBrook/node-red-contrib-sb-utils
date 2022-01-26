@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 ## Unreleased
 ### Added
+- `sb-pulse` node.
 - `sb-router` node.
 ### Changed
 - Add `sb` prefix to nodes and examples file names.
