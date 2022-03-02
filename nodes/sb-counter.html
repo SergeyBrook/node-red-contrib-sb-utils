@@ -8,9 +8,22 @@
 			name: {value: ''},
 			control: {value: 'control', required: true},
 			mode: {value: '1'},
-			factor: {value: 1, required: true},
-			min: {value: 0, required: true},
-			max: {value: 50000, required: true},
+			factor: {value: 1, required: true, validate: function(val) {
+				val = parseInt(val);
+				let min = parseInt($('#node-input-min').length ? $('#node-input-min').val() : this.min);
+				let max = parseInt($('#node-input-max').length ? $('#node-input-max').val() : this.max);
+				return val > 0 && val <= max - min;
+			}},
+			min: {value: 0, required: true, validate: function(val) {
+				val = parseInt(val);
+				let max = parseInt($('#node-input-max').length ? $('#node-input-max').val() : this.max);
+				return val < max && val >= 0;
+			}},
+			max: {value: 50000, required: true, validate: function(val) {
+				val = parseInt(val);
+				let min = parseInt($('#node-input-min').length ? $('#node-input-min').val() : this.min);
+				return val > min && val < Number.MAX_SAFE_INTEGER;
+			}},
 			enableOnReset: {value: true},
 			enableOnCount: {value: false}
 		},
@@ -55,7 +68,7 @@
 		<label for="node-input-min" style="width: auto;">Min</label>
 		<input type="number" id="node-input-min" min="0" placeholder="0" style="width: 28%;">
 		<label for="node-input-max" style="width: auto; padding-left: 0.9em;">Max</label>
-		<input type="number" id="node-input-max" min="0" placeholder="50000" style="width: 28%;">
+		<input type="number" id="node-input-max" min="1" placeholder="50000" style="width: 28%;">
 	</div>
 	<div class="form-row">
 		<label><i class="fa fa-random"></i> Output</label>
