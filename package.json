@@ -1,11 +1,14 @@
 {
-	"name": "node-red-contrib-sb-utils",
+	"name": "@sergeybrook/node-red-contrib-sb-utils",
 	"version": "0.1.0",
 	"description": "Node-RED utility nodes",
 	"keywords": [
 		"node-red",
+		"counter",
 		"gate",
+		"pulse",
 		"queue",
+		"router",
 		"watchdog"
 	],
 	"license": "MIT",
@@ -15,12 +18,19 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/SergeyBrook/node-red-contrib-sb-utils"
+		"url": "https://github.com/SergeyBrook/node-red-contrib-sb-utils.git"
+	},
+	"bugs": {
+		"url": "https://github.com/SergeyBrook/node-red-contrib-sb-utils/issues"
 	},
 	"dependencies": {},
+	"engines": {
+		"node": ">=12.0.0"
+	},
 	"node-red": {
 		"version": ">=1.0.0",
 		"nodes": {
+			"sb-counter": "nodes/sb-counter.js",
 			"sb-gate": "nodes/sb-gate.js",
 			"sb-pulse": "nodes/sb-pulse.js",
 			"sb-queue": "nodes/sb-queue.js",
