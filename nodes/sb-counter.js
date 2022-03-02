@@ -21,12 +21,15 @@ module.exports = function(RED) {
 		// Counter:
 		this.counter = {
 			value: 0,
-			mode: parseInt(config.mode), // 1 = increment, -1 = decrement
+			overflow: 0,
+			countMode: parseInt(config.countMode), // 1 = increment, -1 = decrement
 			factor: parseInt(config.factor),
-			min: parseInt(config.min), // > -(2^53) (Number.MIN_SAFE_INTEGER)
-			max: parseInt(config.max), // < 2^53 (Number.MAX_SAFE_INTEGER)
+			min: parseInt(config.min),
+			max: parseInt(config.max),
+			overflowMode: parseInt(config.overflowMode), // 0 = reset, 1 = stop
 			init: function() {
-				this.value = (this.mode > 0 ? this.min : this.max);
+				this.value = (this.countMode > 0 ? this.min : this.max);
+				this.overflow = 0;
 				this.updateStatus();
 			},
 			get: function(reason) {
@@ -37,8 +40,16 @@ module.exports = function(RED) {
 					payload: this.value
 				}
 			},
+			add: function(num) {
+				let val = this.value + num;
+				let lim = (this.countMode > 0 ? this.max : this.min);
+				let dif = (val - lim) * this.countMode;
+
+				this.value += (dif > 0 ? (num * this.countMode - dif) * this.countMode : num);
+				this.overflow += (dif > 0 ? dif : 0);
+			},
 			count: function() {
-				this.value += this.factor * this.mode;
+				this.add(this.factor * this.countMode);
 				this.updateStatus();
 			},
 			reset: function() {
@@ -48,7 +59,7 @@ module.exports = function(RED) {
 				let status = {
 					fill: (this.value >= this.min && this.value <= this.max ? 'green' : 'yellow'),
 					shape: (this.value > this.min && this.value < this.max ? 'dot' : 'ring'),
-					text: this.value
+					text: this.value + ' (' + this.overflow + ')'
 				};
 				// Set status:
 				node.status(status);

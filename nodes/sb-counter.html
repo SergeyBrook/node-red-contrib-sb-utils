@@ -7,12 +7,12 @@
 		defaults: {
 			name: {value: ''},
 			control: {value: 'control', required: true},
-			mode: {value: '1'},
+			countMode: {value: '1'},
 			factor: {value: 1, required: true, validate: function(val) {
 				val = parseInt(val);
 				let min = parseInt($('#node-input-min').length ? $('#node-input-min').val() : this.min);
 				let max = parseInt($('#node-input-max').length ? $('#node-input-max').val() : this.max);
-				return val > 0 && val <= max - min;
+				return val <= max - min && val > 0;
 			}},
 			min: {value: 0, required: true, validate: function(val) {
 				val = parseInt(val);
@@ -24,6 +24,7 @@
 				let min = parseInt($('#node-input-min').length ? $('#node-input-min').val() : this.min);
 				return val > min && val < Number.MAX_SAFE_INTEGER;
 			}},
+			overflowMode: {value: '0'},
 			enableOnReset: {value: true},
 			enableOnCount: {value: false}
 		},
@@ -55,8 +56,8 @@
 		<input type="text" id="node-input-control">
 	</div>
 	<div class="form-row">
-		<label for="node-input-mode"><i class="fa fa-arrows-v"></i> Mode</label>
-		<select id="node-input-mode" style="width: 33%;">
+		<label for="node-input-countMode"><i class="fa fa-arrows-v"></i> Count mode</label>
+		<select id="node-input-countMode" style="width: 33%;">
 			<option value="1">Increment</option>
 			<option value="-1">Decrement</option>
 		</select>
@@ -69,6 +70,13 @@
 		<input type="number" id="node-input-min" min="0" placeholder="0" style="width: 28%;">
 		<label for="node-input-max" style="width: auto; padding-left: 0.9em;">Max</label>
 		<input type="number" id="node-input-max" min="1" placeholder="50000" style="width: 28%;">
+	</div>
+	<div class="form-row">
+		<label for="node-input-overflowMode"><i class="fa fa-tint"></i> Overflow</label>
+		<select id="node-input-overflowMode" style="width: 70%;">
+			<option value="0">Reset</option>
+			<option value="1">Stop</option>
+		</select>
 	</div>
 	<div class="form-row">
 		<label><i class="fa fa-random"></i> Output</label>
@@ -97,7 +105,7 @@
 				<dd>---</dd>
 			</dl>
 		</li>
-		<li>Event (optional)
+		<li>Counter
 			<dl class="message-properties">
 				<dt>--- <span class="property-type">---</span></dt>
 				<dd>---</dd>
@@ -110,6 +118,8 @@
 			<li>'Name' - node name.</li>
 			<li>'Control' - Message property name where control message (---) is expected.</li>
 			<li>'Mode' - ---</li>
+			<li>'Range: Min / Max' - ---</li>
+			<li>'Overflow' - ---</li>
 			<li>'Output: Enable counter output on reset' - if checked, ---.</li>
 			<li>'Output: Enable counter output on change' - if checked, ---.</li>
 		</ul>
