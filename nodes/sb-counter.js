@@ -22,38 +22,77 @@ module.exports = function(RED) {
 		this.counter = {
 			value: 0,
 			overflow: 0,
-			countMode: parseInt(config.countMode), // 1 = increment, -1 = decrement
+			countMode: parseInt(config.countMode), // 1 = increment, -1 = decrement.
 			factor: parseInt(config.factor),
 			min: parseInt(config.min),
 			max: parseInt(config.max),
-			overflowMode: parseInt(config.overflowMode), // 0 = reset, 1 = stop
+			overflowMode: parseInt(config.overflowMode), // 0 = reset, 1 = stop.
+			overflowSent: false,
 			init: function() {
 				this.value = (this.countMode > 0 ? this.min : this.max);
 				this.overflow = 0;
+				this.overflowSent = false;
 				this.updateStatus();
-			},
-			get: function(reason) {
-				return {
-					_msgid: RED.util.generateId(),
-					name: 'counter',
-					reason: reason,
-					payload: this.value
-				}
-			},
-			add: function(num) {
-				let val = this.value + num;
-				let lim = (this.countMode > 0 ? this.max : this.min);
-				let dif = (val - lim) * this.countMode;
-
-				this.value += (dif > 0 ? (num * this.countMode - dif) * this.countMode : num);
-				this.overflow += (dif > 0 ? dif : 0);
 			},
 			count: function() {
 				this.add(this.factor * this.countMode);
 				this.updateStatus();
+				if (node.enableOnCount) {
+					this.send('count');
+				}
 			},
 			reset: function() {
 				this.init();
+				if (node.enableOnReset) {
+					this.send('reset');
+				}
+			},
+			add: function(num) {
+				let sig = num / Math.abs(num); // Get sign (+/-) regardles of count mode.
+				let val = this.value + num; // Calculate new value.
+				let lim = (sig > 0 ? this.max : this.min); // Get limit to check against (max for positive, min for negative values).
+				let dif = (val - lim) * sig; // Get normalized value-limit difference (negative = within limit, positive = overflow).
+
+				this.value = (dif > 0 ? lim : val);
+				this.overflow += (dif > 0 ? dif * sig : 0);
+
+				this.handleOverflow();
+			},
+			handleOverflow: function() {
+				if (this.overflow !== 0) {
+					if (!this.overflowSent) {
+						this.send('overflow');
+						this.overflowSent = true;
+					}
+
+					switch (this.overflowMode) {
+						case 0:
+							// Reset.
+							this.init();
+							break;
+						case 1:
+							// Stop.
+							//this.overflow = 0;
+							this.updateStatus();
+							break;
+						default:
+							// Do nothing.
+							break;
+					}
+				}
+			},
+			send: function(reason) {
+				let msg = {
+					_msgid: RED.util.generateId(),
+					name: 'counter',
+					reason: reason,
+					payload: this.value,
+					overflow: this.overflow,
+					min: this.min,
+					max: this.max
+				};
+				// Send counter:
+				node.send([null, msg]);
 			},
 			updateStatus: function() {
 				let status = {
@@ -86,19 +125,16 @@ module.exports = function(RED) {
 					// Process command:
 					switch (command) {
 						case 'get':
-							cnt = node.counter.get(command);
+							node.counter.send(command);
 							break;
 						case 'reset':
 							node.counter.reset();
-							cnt = (node.enableOnReset ? node.counter.get(command) : null);
 							break;
 						case 'void':
 							// Do nothing.
 							break;
 					}
 
-					// Send counter (or nothing):
-					send([null, cnt]);
 					// Notify done:
 					done();
 				} else {
@@ -110,9 +146,8 @@ module.exports = function(RED) {
 				// Received regular message:
 				// Count the messsage:
 				node.counter.count();
-				// Pass trough the message (and optionally, send counter):
-				cnt = (node.enableOnCount ? node.counter.get('count') : null);
-				send([msg, cnt]);
+				// Pass trough the message:
+				send([msg, null]);
 				// Notify done:
 				done();
 			}
