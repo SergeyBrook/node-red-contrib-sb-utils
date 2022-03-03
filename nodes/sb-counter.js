@@ -22,11 +22,11 @@ module.exports = function(RED) {
 		this.counter = {
 			value: 0,
 			overflow: 0,
-			countMode: parseInt(config.countMode), // 1 = increment, -1 = decrement.
+			countMode: parseInt(config.countMode), // 1 = Increment, -1 = Decrement.
 			factor: parseInt(config.factor),
 			min: parseInt(config.min),
 			max: parseInt(config.max),
-			overflowMode: parseInt(config.overflowMode), // 0 = reset, 1 = stop.
+			overflowMode: parseInt(config.overflowMode), // 0 = Reset, 1 = Stop.
 			overflowSent: false,
 			init: function() {
 				this.value = (this.countMode > 0 ? this.min : this.max);
@@ -72,7 +72,6 @@ module.exports = function(RED) {
 							break;
 						case 1:
 							// Stop.
-							//this.overflow = 0;
 							this.updateStatus();
 							break;
 						default:
@@ -86,6 +85,7 @@ module.exports = function(RED) {
 					_msgid: RED.util.generateId(),
 					name: 'counter',
 					reason: reason,
+					mode: (this.countMode > 0 ? 'increment' : 'decrement'),
 					payload: this.value,
 					overflow: this.overflow,
 					min: this.min,
@@ -114,9 +114,6 @@ module.exports = function(RED) {
 
 		// On message input event handler:
 		this.on('input', function(msg, send, done) {
-			// Counter - sent to second output:
-			let cnt = null;
-
 			if (msg.hasOwnProperty(node.control)) {
 				// Received control message:
 				let command = (typeof msg[node.control] == 'string' ? msg[node.control].toLowerCase() : '');
