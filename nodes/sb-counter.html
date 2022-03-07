@@ -26,6 +26,7 @@
 			}},
 			overflowMode: {value: '0'},
 			enableOnReset: {value: true},
+			enableOnOverflow: {value: true},
 			enableOnCount: {value: false}
 		},
 		inputs: 1,
@@ -85,6 +86,11 @@
 	</div>
 	<div class="form-row">
 		<label>&nbsp;</label>
+		<input type="checkbox" id="node-input-enableOnOverflow" style="width: auto; vertical-align: top;">
+		<label for="node-input-enableOnOverflow" style="width: auto; padding-left: 0.5em;">Enable counter output on overflow</label>
+	</div>
+	<div class="form-row">
+		<label>&nbsp;</label>
 		<input type="checkbox" id="node-input-enableOnCount" style="width: auto; vertical-align: top;">
 		<label for="node-input-enableOnCount" style="width: auto; padding-left: 0.5em;">Enable counter output on change</label>
 	</div>
@@ -121,6 +127,7 @@
 			<li>'Range: Min / Max' - ---</li>
 			<li>'Overflow' - ---</li>
 			<li>'Output: Enable counter output on reset' - if checked, ---.</li>
+			<li>'Output: Enable counter output on overflow' - if checked, ---.</li>
 			<li>'Output: Enable counter output on change' - if checked, ---.</li>
 		</ul>
 	</p>

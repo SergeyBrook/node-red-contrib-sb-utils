@@ -16,6 +16,7 @@ module.exports = function(RED) {
 		this.name = config.name;
 		this.control = config.control;
 		this.enableOnReset = config.enableOnReset;
+		this.enableOnOverflow = config.enableOnOverflow;
 		this.enableOnCount = config.enableOnCount;
 
 		// Counter:
@@ -34,18 +35,19 @@ module.exports = function(RED) {
 				this.overflowSent = false;
 				this.updateStatus();
 			},
+			reset: function() {
+				this.init();
+				if (node.enableOnReset) {
+					this.send('reset');
+				}
+			},
 			count: function() {
 				this.add(this.factor * this.countMode);
 				this.updateStatus();
 				if (node.enableOnCount) {
 					this.send('count');
 				}
-			},
-			reset: function() {
-				this.init();
-				if (node.enableOnReset) {
-					this.send('reset');
-				}
+				this.handleOverflow();
 			},
 			add: function(num) {
 				let sig = num / Math.abs(num); // Get sign (+/-) regardles of count mode.
@@ -55,24 +57,19 @@ module.exports = function(RED) {
 
 				this.value = (dif > 0 ? lim : val);
 				this.overflow += (dif > 0 ? dif * sig : 0);
-
-				this.handleOverflow();
 			},
 			handleOverflow: function() {
 				if (this.overflow !== 0) {
-					if (!this.overflowSent) {
+					if (node.enableOnOverflow && !this.overflowSent) {
 						this.send('overflow');
 						this.overflowSent = true;
 					}
-
 					switch (this.overflowMode) {
-						case 0:
-							// Reset.
-							this.init();
+						case 0: // Reset.
+							this.reset();
 							break;
-						case 1:
-							// Stop.
-							this.updateStatus();
+						case 1: // Stop.
+							// Do nothing.
 							break;
 						default:
 							// Do nothing.
@@ -89,14 +86,15 @@ module.exports = function(RED) {
 					payload: this.value,
 					overflow: this.overflow,
 					min: this.min,
-					max: this.max
+					max: this.max,
+					step: this.factor
 				};
 				// Send counter:
 				node.send([null, msg]);
 			},
 			updateStatus: function() {
 				let status = {
-					fill: (this.value >= this.min && this.value <= this.max ? 'green' : 'yellow'),
+					fill: (this.overflow === 0 ? 'green' : 'yellow'),
 					shape: (this.value > this.min && this.value < this.max ? 'dot' : 'ring'),
 					text: this.value + ' (' + this.overflow + ')'
 				};
