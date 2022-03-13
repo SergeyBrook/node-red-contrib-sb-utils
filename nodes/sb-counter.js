@@ -55,8 +55,17 @@ module.exports = function(RED) {
 				let lim = (sig > 0 ? this.max : this.min); // Get limit to check against (max for positive, min for negative values).
 				let dif = (val - lim) * sig; // Get normalized value-limit difference (negative = within limit, positive = overflow).
 
-				this.value = (dif > 0 ? lim : val);
-				this.overflow += (dif > 0 ? dif * sig : 0);
+				if (dif > 0) {
+					// Overflow:
+					let rng = this.max - this.min; // Get effective range.
+					let ovf = this.overflow + dif * sig; // Calculate new overflow.
+
+					this.value = lim; // Set value to limit.
+					this.overflow = (ovf * sig > rng ? rng * sig : ovf); // Update overflow - limit by effective range.
+				} else {
+					// No overflow:
+					this.value = val; // Update value.
+				}
 			},
 			handleOverflow: function() {
 				if (this.overflow !== 0) {
