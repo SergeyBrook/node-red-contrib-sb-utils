@@ -1,0 +1,166 @@
+<!-- Counter node -->
+
+<script type="text/javascript">
+	RED.nodes.registerType('sb-counter', {
+		category: 'sb utils',
+		color: '#C0C0C0',
+		defaults: {
+			name: {value: ''},
+			control: {value: 'control', required: true},
+			countMode: {value: '1'},
+			factor: {value: 1, required: true, validate: function(val) {
+				val = parseInt(val);
+				let min = parseInt($('#node-input-min').length ? $('#node-input-min').val() : this.min);
+				let max = parseInt($('#node-input-max').length ? $('#node-input-max').val() : this.max);
+				return val <= max - min && val > 0;
+			}},
+			min: {value: 0, required: true, validate: function(val) {
+				val = parseInt(val);
+				let max = parseInt($('#node-input-max').length ? $('#node-input-max').val() : this.max);
+				return val < max && val >= 0;
+			}},
+			max: {value: 50000, required: true, validate: function(val) {
+				val = parseInt(val);
+				let min = parseInt($('#node-input-min').length ? $('#node-input-min').val() : this.min);
+				return val > min && val < Number.MAX_SAFE_INTEGER;
+			}},
+			overflowMode: {value: '0'},
+			enableOnReset: {value: true},
+			enableOnOverflow: {value: true},
+			enableOnCount: {value: false}
+		},
+		inputs: 1,
+		inputLabels: 'Data / Control',
+		outputs: 2,
+		outputLabels: ['Data', 'Counter'],
+		icon: 'font-awesome/fa-sort',
+		paletteLabel: 'counter',
+		label: function() {
+			return this.name || 'counter';
+		},
+		labelStyle: function() {
+			return this.name ? "node_label_italic" : "";
+		},
+		oneditprepare: function() {
+			let node = this;
+		}
+	});
+</script>
+
+<script type="text/html" data-template-name="sb-counter">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name">
+	</div>
+	<div class="form-row">
+		<label for="node-input-control"><i class="fa fa-cog"></i> Control</label>
+		<input type="text" id="node-input-control">
+	</div>
+	<div class="form-row">
+		<label for="node-input-countMode"><i class="fa fa-arrows-v"></i> Count mode</label>
+		<select id="node-input-countMode" style="width: 33%;">
+			<option value="1">Increment</option>
+			<option value="-1">Decrement</option>
+		</select>
+		<label for="node-input-factor" style="width: auto; padding-left: 1.6em;">By</label>
+		<input type="number" id="node-input-factor" min="1" placeholder="1" style="width: 28%;">
+	</div>
+	<div class="form-row">
+		<label><i class="fa fa-arrows-h"></i> Range</label>
+		<label for="node-input-min" style="width: auto;">Min</label>
+		<input type="number" id="node-input-min" min="0" placeholder="0" style="width: 28%;">
+		<label for="node-input-max" style="width: auto; padding-left: 0.9em;">Max</label>
+		<input type="number" id="node-input-max" min="1" placeholder="50000" style="width: 28%;">
+	</div>
+	<div class="form-row">
+		<label for="node-input-overflowMode"><i class="fa fa-tint"></i> Overflow</label>
+		<select id="node-input-overflowMode" style="width: 70%;">
+			<option value="0">Reset</option>
+			<option value="1">Stop</option>
+		</select>
+	</div>
+	<div class="form-row">
+		<label><i class="fa fa-random"></i> Output</label>
+		<input type="checkbox" id="node-input-enableOnReset" style="width: auto; vertical-align: top;">
+		<label for="node-input-enableOnReset" style="width: auto; padding-left: 0.5em;">Enable counter output on reset</label>
+	</div>
+	<div class="form-row">
+		<label>&nbsp;</label>
+		<input type="checkbox" id="node-input-enableOnOverflow" style="width: auto; vertical-align: top;">
+		<label for="node-input-enableOnOverflow" style="width: auto; padding-left: 0.5em;">Enable counter output on overflow</label>
+	</div>
+	<div class="form-row">
+		<label>&nbsp;</label>
+		<input type="checkbox" id="node-input-enableOnCount" style="width: auto; vertical-align: top;">
+		<label for="node-input-enableOnCount" style="width: auto; padding-left: 0.5em;">Enable counter output on change</label>
+	</div>
+</script>
+
+<script type="text/html" data-help-name="sb-counter">
+	<p>Counter node</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt class="optional">control <span class="property-type">string</span></dt>
+		<dd>If present, the message is treated as 'command' and not forwarded to first (Data) output. Possible values: 'get', 'reset', 'void'. If not present, the message is treated as 'regular' message.</dd>
+	</dl>
+	<h3>Outputs</h3>
+	<ol class="node-ports">
+		<li>Data
+			<dl class="message-properties">
+				<dt>msg <span class="property-type">object</span></dt>
+				<dd>The 'regular' input message forwarded to this output.</dd>
+			</dl>
+		</li>
+		<li>Counter
+			<dl class="message-properties">
+				<dt>name <span class="property-type">string</span></dt>
+				<dd>Event name. Possible values: 'counter'</dd>
+				<dt>reason <span class="property-type">string</span></dt>
+				<dd>Event reason. Possible values: 'get', 'count', 'reset', 'overflow'.</dd>
+				<dt>mode <span class="property-type">string</span></dt>
+				<dd>Counter mode. Possible values: 'increment', 'decrement'.</dd>
+				<dt>payload <span class="property-type">number</span></dt>
+				<dd>Counter value.</dd>
+				<dt>overflow <span class="property-type">number</span></dt>
+				<dd>Overflow value. In increment mode the value is positive, in decrement mode the value is negative.</dd>
+				<dt>min <span class="property-type">number</span></dt>
+				<dd>Counter low limit.</dd>
+				<dt>max <span class="property-type">number</span></dt>
+				<dd>Counter high limit.</dd>
+				<dt>step <span class="property-type">number</span></dt>
+				<dd>Counter step.</dd>
+			</dl>
+		</li>
+	</ol>
+	<h3>Details</h3>
+	<p>Config:
+		<ul>
+			<li>'Name' - node name.</li>
+			<li>'Control' - control property name.</li>
+			<li>'Count mode' - increment / decrement and step.</li>
+			<li>'Range: Min / Max' - counter low and high limits.</li>
+			<li>'Overflow' - action to take on overflow:
+				<ul>
+					<li>'Stop' - stops the counter.</li>
+					<li>'Reset' - resets the counter.</li>
+				</ul>
+			</li>
+			<li>'Output: Enable counter output on reset' - if checked, sends reset message to 'Counter' output on reset event.</li>
+			<li>'Output: Enable counter output on overflow' - if checked, sends overflow message to 'Counter' output on overflow event.</li>
+			<li>'Output: Enable counter output on change' - if checked, sends count message to 'Counter' output on each counter change.</li>
+		</ul>
+	</p>
+	<p>Commands:
+		<ul>
+			<li>'get' - get counter value.</li>
+			<li>'reset' - reset counter.</li>
+			<li>'void' - treat the message as valid command, but do nothing.</li>
+		</ul>
+		All commands are case insensitive. If invalid command received, 'Invalid command' error thrown.
+	</p>
+	<p>Notes:
+		<ul>
+			<li>Each regular message forwarded from input to 'Data' output as is and updates counter regardless of counter state.</li>
+		</ul>
+	</p>
+</script>
