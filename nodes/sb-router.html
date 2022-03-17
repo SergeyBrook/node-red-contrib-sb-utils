@@ -10,6 +10,11 @@
 			outputs: {value: 2, required: true, validate: function(val) {
 				val = parseInt(val);
 				return val >= 2;
+			}},
+			defaultOutput: {value: 1, required: true, validate: function(val) {
+				val = parseInt(val);
+				let outputs = parseInt($('#node-input-outputs').length ? $('#node-input-outputs').val() : this.outputs);
+				return val >= 1 && val <= outputs;
 			}}
 		},
 		inputs: 1,
@@ -43,6 +48,10 @@
 		<label for="node-input-outputs"><i class="fa fa-random"></i> Outputs</label>
 		<input type="number" id="node-input-outputs" min="2" placeholder="2">
 	</div>
+	<div class="form-row">
+		<label for="node-input-defaultOutput"><i class="fa fa-sign-out"></i> Default</label>
+		<input type="number" id="node-input-defaultOutput" min="1" placeholder="1">
+	</div>
 </script>
 
 <script type="text/html" data-help-name="sb-router">
@@ -63,11 +72,13 @@
 			<li>'Name' - node name.</li>
 			<li>'Control' - control property name.</li>
 			<li>'Outputs' - number of router outputs (min: 2).</li>
+			<li>'Default' - default output number to route messages to (min: 1, max: number of outputs).</li>
 		</ul>
 	</p>
 	<p>Commands:
 		<ul>
 			<li>[1 ... n] - select to which output incomming messages will be routed.</li>
+			<li>0 - select default output.</li>
 		</ul>
 		If invalid command received, 'Invalid command' error thrown.
 		Each 'regular' message is routed from input to selected output as is.

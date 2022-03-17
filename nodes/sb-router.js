@@ -15,18 +15,18 @@ module.exports = function(RED) {
 		// Node props:
 		this.name = config.name;
 		this.control = config.control;
+		this.defaultOutput = parseInt(config.defaultOutput);
 
 		// Router:
 		this.router = {
-			output: 1,
+			output: node.defaultOutput,
 			outputsNum: parseInt(config.outputs),
 			init: function() {
-				this.output = 1;
 				node.status(this.getStatus());
 			},
 			setOutput: function(num) {
-				if (Number.isInteger(num) && num > 0 && num <= this.outputsNum) {
-					this.output = num;
+				if (Number.isInteger(num) && num >= 0 && num <= this.outputsNum) {
+					this.output = (num > 0 ? num : node.defaultOutput);
 					node.status(this.getStatus());
 					return true;
 				} else {
