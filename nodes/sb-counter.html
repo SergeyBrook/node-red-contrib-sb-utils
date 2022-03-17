@@ -26,7 +26,8 @@
 			}},
 			overflowMode: {value: '0'},
 			enableOnReset: {value: true},
-			enableOnOverflow: {value: true},
+			enableOnLimit: {value: true},
+			enableOnOverflow: {value: false},
 			enableOnCount: {value: false}
 		},
 		inputs: 1,
@@ -83,6 +84,11 @@
 		<label><i class="fa fa-random"></i> Output</label>
 		<input type="checkbox" id="node-input-enableOnReset" style="width: auto; vertical-align: top;">
 		<label for="node-input-enableOnReset" style="width: auto; padding-left: 0.5em;">Enable counter output on reset</label>
+	</div>
+	<div class="form-row">
+		<label>&nbsp;</label>
+		<input type="checkbox" id="node-input-enableOnLimit" style="width: auto; vertical-align: top;">
+		<label for="node-input-enableOnLimit" style="width: auto; padding-left: 0.5em;">Enable counter output on limit reached</label>
 	</div>
 	<div class="form-row">
 		<label>&nbsp;</label>
@@ -146,6 +152,7 @@
 				</ul>
 			</li>
 			<li>'Output: Enable counter output on reset' - if checked, sends reset message to 'Counter' output on reset event.</li>
+			<li>'Output: Enable counter output on limit reached' - if checked, sends limit message to 'Counter' output on limit reached event.</li>
 			<li>'Output: Enable counter output on overflow' - if checked, sends overflow message to 'Counter' output on overflow event.</li>
 			<li>'Output: Enable counter output on change' - if checked, sends count message to 'Counter' output on each counter change.</li>
 		</ul>
@@ -160,7 +167,7 @@
 	</p>
 	<p>Notes:
 		<ul>
-			<li>Each regular message forwarded from input to 'Data' output as is and updates counter regardless of counter state.</li>
+			<li>Each regular message forwarded from input to 'Data' output as is (regardless of counter state) and updates counter.</li>
 		</ul>
 	</p>
 </script>

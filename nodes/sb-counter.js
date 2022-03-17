@@ -16,6 +16,7 @@ module.exports = function(RED) {
 		this.name = config.name;
 		this.control = config.control;
 		this.enableOnReset = config.enableOnReset;
+		this.enableOnLimit = config.enableOnLimit
 		this.enableOnOverflow = config.enableOnOverflow;
 		this.enableOnCount = config.enableOnCount;
 
@@ -28,10 +29,12 @@ module.exports = function(RED) {
 			min: parseInt(config.min),
 			max: parseInt(config.max),
 			overflowMode: parseInt(config.overflowMode), // 0 = Reset, 1 = Stop.
+			limitSent: false,
 			overflowSent: false,
 			init: function() {
 				this.value = (this.countMode > 0 ? this.min : this.max);
 				this.overflow = 0;
+				this.limitSent = false;
 				this.overflowSent = false;
 				this.updateStatus();
 			},
@@ -47,6 +50,7 @@ module.exports = function(RED) {
 				if (node.enableOnCount) {
 					this.send('count');
 				}
+				this.handleLimit();
 				this.handleOverflow();
 			},
 			add: function(num) {
@@ -65,6 +69,15 @@ module.exports = function(RED) {
 				} else {
 					// No overflow:
 					this.value = val; // Update value.
+				}
+			},
+			handleLimit: function() {
+				let lim = (this.countMode > 0 ? this.max : this.min);
+				if (this.value === lim) {
+					if (node.enableOnLimit && !this.limitSent) {
+						this.send('limit');
+						this.limitSent = true;
+					}
 				}
 			},
 			handleOverflow: function() {
